@@ -1,0 +1,14 @@
+# 通用设置
+root = true
+
+# C# 文件
+[*.cs]
+
+# 缩进使用制表符或空格，根据你的喜好选择一种
+indent_style = space
+indent_size = 4
+
+# 方法的大括号放在同一行
+csharp_new_line_before_open_brace = never
+
+csharp_new_line_before_else = false
