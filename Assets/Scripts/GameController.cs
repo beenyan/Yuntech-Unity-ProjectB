@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
@@ -11,11 +12,22 @@ public class Around {
     public int Down = 0;
 };
 
+public enum Status {
+    Idle,
+    FallDown,
+    Remove,
+    Drag
+}
+
 public class GameController : MonoBehaviour {
     public static Vector2 MapSize = new(10, 10);
     static readonly GameObject[,] Map = new GameObject[(int)MapSize.y, (int)MapSize.x];
     private static readonly HashSet<Vector2> SelectedGem = new();
-    private static bool IsMoved = false;
+    public static Status Status = Status.Idle;
+    public static int MoveCount = 0;
+    private static Gem[] RemovePrepare;
+    private static readonly HashSet<Vector2> FallDownPosSet = new();
+    private string nameObject;
 
     private void Awake() {
         Init();
@@ -23,13 +35,18 @@ public class GameController : MonoBehaviour {
 
     // Start is called before the first frame update
     void Start() {
-
     }
 
     // Update is called once per frame
     void Update() {
+        if (Status == Status.Remove && MoveCount == 0) {
+            FallDownPosSet.Clear();
+            RemoveSameType(RemovePrepare);
+            Array.Clear(RemovePrepare, 0, RemovePrepare.Length);
+        } else if (Status == Status.FallDown && MoveCount == 0) {
+            FallDown();
+        }
     }
-
     void Init() {
         for (int y = 0; y < MapSize.y; ++y) {
             for (int x = 0; x < MapSize.x; ++x) {
@@ -42,7 +59,7 @@ public class GameController : MonoBehaviour {
     public Around SameTypeAround(Gem gem) {
         var around = new Around();
         var type = gem.GetGemType();
-        int posY = (int)gem.GetPos().y;
+        int posY = Math.Max(0, (int)gem.GetPos().y);
         int posX = (int)gem.GetPos().x;
 
         for (int x = posX - 1; x >= 0; x--) {
@@ -73,7 +90,7 @@ public class GameController : MonoBehaviour {
     }
 
     public bool GemClick(Vector2 pos) {
-        if (IsMoved) return false;
+        if (Status == Status.Remove || Status == Status.FallDown) return false;
 
         // Select
         if (SelectedGem.Contains(pos)) {
@@ -94,7 +111,6 @@ public class GameController : MonoBehaviour {
             // Too far
             return false;
         }
-
         // Switch
         var firstGem = Map[(int)firstPos.y, (int)firstPos.x].GetComponent<Gem>();
         var secondGem = Map[(int)pos.y, (int)pos.x].GetComponent<Gem>();
@@ -103,23 +119,23 @@ public class GameController : MonoBehaviour {
         secondGem.MoveToPos(firstPos);
         (Map[(int)firstPos.y, (int)firstPos.x], Map[(int)pos.y, (int)pos.x]) = (Map[(int)pos.y, (int)pos.x], Map[(int)firstPos.y, (int)firstPos.x]);
         SelectedGem.Clear();
-        IsMoved = true;
+        Status = Status.Remove;
+        MoveCount = 2;
 
         // Remove Same Type Gem
-        RemoveSameType(new[] { firstGem, secondGem });
+        RemovePrepare = new[] { firstGem, secondGem };
 
         return false;
     }
 
     void RemoveSameType(Gem[] gemArray) {
         bool isExcuteRemove = false;
-
-        foreach (var gem in gemArray) {
+        foreach (var gem in gemArray.Distinct().NotNull()) {
             var around = SameTypeAround(gem);
             int posY = (int)gem.GetPos().y;
             int posX = (int)gem.GetPos().x;
             if (around.Right + around.Left >= 2) {
-                for (int x = posX - around.Left; x < posX + around.Right + 1; x++) {
+                for (int x = posX - around.Left; x < posX + around.Right + 1; ++x) {
                     Destroy(Map[posY, x]);
                     Map[posY, x] = null;
                     isExcuteRemove = true;
@@ -127,7 +143,7 @@ public class GameController : MonoBehaviour {
             }
 
             if (around.Top + around.Down >= 2) {
-                for (int y = posY - around.Top; y < posY + around.Down + 1; y++) {
+                for (int y = posY - around.Top; y < posY + around.Down + 1; ++y) {
                     Destroy(Map[y, posX]);
                     Map[y, posX] = null;
                     isExcuteRemove = true;
@@ -137,42 +153,45 @@ public class GameController : MonoBehaviour {
 
         if (!isExcuteRemove) {
             // No Gem Remove
-            IsMoved = false;
+            Status = Status.Idle;
             return;
         }
 
-        FallDown();
+        Status = Status.FallDown;
     }
 
     void FallDown() {
-        HashSet<Vector2> movedPos = new();
+        bool isFall = false;
+        for (int y = (int)MapSize.y - 1; y >= 0; --y) {
+            for (int x = (int)MapSize.x - 1; x >= 0; --x) {
+                if (Map[y, x] != null) continue;
+                FallDownPosSet.Add(new Vector2(x, y));
 
-        while (true) {
-            bool isFall = false;
-            for (int y = (int)MapSize.y - 1; y >= 0; --y) {
-                for (int x = (int)MapSize.x - 1; x >= 0; --x) {
-                    if (Map[y, x] != null) continue;
-                    movedPos.Add(new Vector2(x, y));
-
-                    if (y == 0) {
-                        // Top - Generate
-                        Map[y, x] = Instantiate(Resources.Load<GameObject>(Utils.Resources.Gem.ToString()));
-                        Map[y, x].GetComponent<Gem>().Init(y, x);
-                    } else if (Map[y - 1, x] != null) {
-                        // Not Top - Fall
-                        Map[y - 1, x].GetComponent<Gem>().MoveToPos(new Vector2(x, y));
-                        Map[y, x] = Map[y - 1, x];
-                        Map[y - 1, x] = null;
-                        isFall = true;
-                    }
+                if (y == 0) {
+                    // Top - Generate
+                    Map[y, x] = Instantiate(Resources.Load<GameObject>(Utils.Resources.Gem.ToString()));
+                    Map[y, x].GetComponent<Gem>().Init(y - 1, x);
+                    Map[y, x].GetComponent<Gem>().MoveToPos(new Vector2(x, y));
+                    isFall = true;
+                    ++MoveCount;
+                } else if (Map[y - 1, x] != null) {
+                    // Not Top - Fall
+                    Map[y, x] = Map[y - 1, x];
+                    Map[y, x].GetComponent<Gem>().MoveToPos(new Vector2(x, y));
+                    Map[y - 1, x] = null;
+                    isFall = true;
+                    ++MoveCount;
                 }
             }
-
-            if (!isFall) break;
         }
 
-        var posArray = new Vector2[movedPos.Count];
-        movedPos.CopyTo(posArray);
-        RemoveSameType(Array.ConvertAll(posArray, pos => Map[(int)pos.y, (int)pos.x].GetComponent<Gem>()));
+
+        if (!isFall) {
+            var posArray = new Vector2[FallDownPosSet.Count];
+            FallDownPosSet.CopyTo(posArray);
+            RemovePrepare = Array.ConvertAll(posArray, pos => Map[(int)pos.y, (int)pos.x].GetComponent<Gem>());
+            Status = Status.Remove;
+            return;
+        }
     }
 }
