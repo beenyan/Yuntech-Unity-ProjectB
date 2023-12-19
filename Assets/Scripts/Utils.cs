@@ -9,7 +9,7 @@ public class StringValueAttribute : Attribute {
 }
 
 public class Utils {
-    enum Axis {
+    public enum Axis {
         [StringValue("Vertical")]
         Vertical,
         [StringValue("Horizontal")]
