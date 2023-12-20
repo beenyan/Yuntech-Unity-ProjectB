@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
@@ -19,7 +18,7 @@ public enum Status {
     Drag
 }
 
-public class GameController : MonoBehaviour {
+public class GameController: MonoBehaviour {
     public static Vector2 MapSize = new(10, 10);
     static readonly GameObject[,] Map = new GameObject[(int)MapSize.y, (int)MapSize.x];
     private static readonly HashSet<Vector2> SelectedGem = new();
@@ -63,22 +62,26 @@ public class GameController : MonoBehaviour {
         int posX = (int)gem.GetPos().x;
 
         for (int x = posX - 1; x >= 0; x--) {
-            if (Map[posY, x] == null || type != Map[posY, x].GetComponent<Gem>().GetGemType()) break;
+            if (Map[posY, x] == null || type != Map[posY, x].GetComponent<Gem>().GetGemType())
+                break;
             ++around.Left;
         }
 
         for (int x = posX + 1; x < MapSize.x; x++) {
-            if (Map[posY, x] == null || type != Map[posY, x].GetComponent<Gem>().GetGemType()) break;
+            if (Map[posY, x] == null || type != Map[posY, x].GetComponent<Gem>().GetGemType())
+                break;
             ++around.Right;
         }
 
         for (int y = posY - 1; y >= 0; y--) {
-            if (Map[y, posX] == null || type != Map[y, posX].GetComponent<Gem>().GetGemType()) break;
+            if (Map[y, posX] == null || type != Map[y, posX].GetComponent<Gem>().GetGemType())
+                break;
             ++around.Top;
         }
 
         for (int y = posY + 1; y < MapSize.y; y++) {
-            if (Map[y, posX] == null || type != Map[y, posX].GetComponent<Gem>().GetGemType()) break;
+            if (Map[y, posX] == null || type != Map[y, posX].GetComponent<Gem>().GetGemType())
+                break;
             ++around.Down;
         }
 
@@ -90,7 +93,8 @@ public class GameController : MonoBehaviour {
     }
 
     public bool GemClick(Vector2 pos) {
-        if (Status == Status.Remove || Status == Status.FallDown) return false;
+        if (Status == Status.Remove || Status == Status.FallDown)
+            return false;
 
         // Select
         if (SelectedGem.Contains(pos)) {
@@ -111,6 +115,7 @@ public class GameController : MonoBehaviour {
             // Too far
             return false;
         }
+
         // Switch
         var firstGem = Map[(int)firstPos.y, (int)firstPos.x].GetComponent<Gem>();
         var secondGem = Map[(int)pos.y, (int)pos.x].GetComponent<Gem>();
@@ -164,7 +169,8 @@ public class GameController : MonoBehaviour {
         bool isFall = false;
         for (int y = (int)MapSize.y - 1; y >= 0; --y) {
             for (int x = (int)MapSize.x - 1; x >= 0; --x) {
-                if (Map[y, x] != null) continue;
+                if (Map[y, x] != null)
+                    continue;
                 FallDownPosSet.Add(new Vector2(x, y));
 
                 if (y == 0) {

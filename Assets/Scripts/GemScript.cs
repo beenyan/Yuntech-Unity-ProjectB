@@ -1,14 +1,14 @@
 using UnityEngine;
 
 public enum GemType {
-    DIAMOND = 0,
-    RUBY = 1,
-    EMERALD = 2,
-    LAPIS = 3,
-    GOLD = 4,
+    ATTACH_WOOD = 0,
+    ATTACH_FIRE = 1,
+    ATTACH_WATER = 2,
+    DEFENSE = 3,
+    HEAL = 4,
 }
 
-public class Gem : MonoBehaviour {
+public class Gem: MonoBehaviour {
     private Vector2 Pos;
     private Vector2 StartPos;
     private float StartTick = 0.0f;
@@ -99,6 +99,7 @@ public class Gem : MonoBehaviour {
         if (GameController.Status != Status.Remove && GameController.Status != Status.FallDown)
             GameController.Status = Status.Drag;
     }
+
     public void OnMouseEnterEvent() {
         if (GameController.Status == Status.Drag) {
             GameController.GemClick(Pos);
