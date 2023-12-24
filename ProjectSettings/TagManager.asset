@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - Gem
+  - PlayerPlace
+  - EnemyPlace
   layers:
   - Default
   - TransparentFX

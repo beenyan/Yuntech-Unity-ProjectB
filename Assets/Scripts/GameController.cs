@@ -20,15 +20,16 @@ public enum Status {
 
 public class GameController: MonoBehaviour {
     public static Vector2 MapSize = new(10, 10);
-    static readonly GameObject[,] Map = new GameObject[(int)MapSize.y, (int)MapSize.x];
-    private static readonly HashSet<Vector2> SelectedGem = new();
-    public static Status Status = Status.Idle;
-    public static int MoveCount = 0;
-    private static Gem[] RemovePrepare;
-    private static readonly HashSet<Vector2> FallDownPosSet = new();
-    private string nameObject;
+    private GameObject[,] Map = new GameObject[(int)MapSize.y, (int)MapSize.x];
+    private readonly HashSet<Vector2> SelectedGem = new();
+    public Status Status = Status.Idle;
+    public int MoveCount = 0;
+    private Gem[] RemovePrepare;
+    private readonly HashSet<Vector2> FallDownPosSet = new();
+    private PlayerController PlayerController;
 
     private void Awake() {
+        PlayerController = PlayerController != null ? PlayerController : Utils.FindByTag(Utils.Tags.Player).GetComponent<PlayerController>();
         Init();
     }
 
@@ -46,11 +47,12 @@ public class GameController: MonoBehaviour {
             FallDown();
         }
     }
+
     void Init() {
         for (int y = 0; y < MapSize.y; ++y) {
             for (int x = 0; x < MapSize.x; ++x) {
                 Map[y, x] = Instantiate(Resources.Load<GameObject>(Utils.Resources.Gem.ToString()));
-                Map[y, x].GetComponent<Gem>().Init(y, x);
+                Map[y, x].GetComponent<Gem>().Init(y, x, gameObject);
             }
         }
     }
@@ -93,6 +95,10 @@ public class GameController: MonoBehaviour {
     }
 
     public bool GemClick(Vector2 pos) {
+        if (transform.parent.CompareTag(Utils.Tags.EnemyPlace.ToString())) {
+            return false;
+        }
+
         if (Status == Status.Remove || Status == Status.FallDown)
             return false;
 
@@ -139,8 +145,10 @@ public class GameController: MonoBehaviour {
             var around = SameTypeAround(gem);
             int posY = (int)gem.GetPos().y;
             int posX = (int)gem.GetPos().x;
+            int destroyCount = 1;
             if (around.Right + around.Left >= 2) {
                 for (int x = posX - around.Left; x < posX + around.Right + 1; ++x) {
+                    destroyCount += around.Right + around.Left;
                     Destroy(Map[posY, x]);
                     Map[posY, x] = null;
                     isExcuteRemove = true;
@@ -149,9 +157,28 @@ public class GameController: MonoBehaviour {
 
             if (around.Top + around.Down >= 2) {
                 for (int y = posY - around.Top; y < posY + around.Down + 1; ++y) {
+                    destroyCount += around.Top + around.Down;
                     Destroy(Map[y, posX]);
                     Map[y, posX] = null;
                     isExcuteRemove = true;
+                }
+            }
+
+            // If Gem Be Remove
+            if (destroyCount != 1) {
+                var gemType = gem.GetComponent<Gem>().GetGemType();
+                switch (gemType) {
+                    case GemType.ATTACK_FIRE:
+                    case GemType.ATTACK_WOOD:
+                    case GemType.ATTACK_WATER:
+                        PlayerController.Attack(gemType, destroyCount);
+                        break;
+                    case GemType.DEFENSE:
+                        PlayerController.Def(destroyCount);
+                        break;
+                    case GemType.HEAL:
+                        PlayerController.Heal(destroyCount);
+                        break;
                 }
             }
         }
@@ -176,7 +203,7 @@ public class GameController: MonoBehaviour {
                 if (y == 0) {
                     // Top - Generate
                     Map[y, x] = Instantiate(Resources.Load<GameObject>(Utils.Resources.Gem.ToString()));
-                    Map[y, x].GetComponent<Gem>().Init(y - 1, x);
+                    Map[y, x].GetComponent<Gem>().Init(y - 1, x, gameObject);
                     Map[y, x].GetComponent<Gem>().MoveToPos(new Vector2(x, y));
                     isFall = true;
                     ++MoveCount;

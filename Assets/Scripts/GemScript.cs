@@ -1,9 +1,9 @@
 using UnityEngine;
 
 public enum GemType {
-    ATTACH_WOOD = 0,
-    ATTACH_FIRE = 1,
-    ATTACH_WATER = 2,
+    ATTACK_WOOD = 0,
+    ATTACK_FIRE = 1,
+    ATTACK_WATER = 2,
     DEFENSE = 3,
     HEAL = 4,
 }
@@ -16,8 +16,8 @@ public class Gem: MonoBehaviour {
     private bool IsSelect = false;
     private bool IsMoved = false;
     private static Sprite[] Sprites;
-    private static GameObject Parent;
-    private static GameController GameController;
+    private GameObject Parent;
+    private GameController GameController;
 
     public Vector2 GetPos() {
         return Pos;
@@ -28,12 +28,12 @@ public class Gem: MonoBehaviour {
     }
 
     void Awake() {
-        Parent = Parent != null ? Parent : GameObject.FindGameObjectWithTag(Utils.Tags.GameController.ToString());
-        GameController = GameController != null ? GameController : Parent.GetComponent<GameController>();
         Sprites ??= Resources.LoadAll<Sprite>(Utils.Resources.GemMaterial.ToString());
     }
 
-    public void Init(int y, int x) {
+    public void Init(int y, int x, GameObject parent) {
+        Parent = parent;
+        GameController = Parent.GetComponent<GameController>();
         Type = Utils.RandomEnumValue<GemType>();
         gameObject.transform.SetParent(Parent.transform);
         SetPosition(new(x, y));
