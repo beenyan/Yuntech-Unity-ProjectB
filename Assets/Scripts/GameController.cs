@@ -116,7 +116,8 @@ public class GameController: MonoBehaviour {
 
         // Select Second
         var firstPos = SelectedGem.Single();
-        var diff = (firstPos - pos).Abs();
+
+        var diff = Utils.Abs(firstPos - pos);
         if (diff.x >= 2 || diff.y >= 2) {
             // Too far
             return false;
