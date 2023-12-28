@@ -7,18 +7,20 @@ using TMPro;
 public class JoinServer: MonoBehaviour {
     private Button JoinServerBT;
     public TMP_InputField InputSID;
-    private AGCC ag;                          //ºô¸ô¥D±±¨î
+    private AGCC ag;                          //ç¶²è·¯ä¸»æ§åˆ¶
     // Start is called before the first frame update
     void Start() {
-        JoinServerBT = GetComponent<Button>();          //¦Û°Ê§ì¨ú¤¸¥ó
-        JoinServerBT.onClick.AddListener(Create);        //µù¥U¸Ó«ö¶s«ö¤Uªº®É­Ô·|©I¥sLogin()
+        JoinServerBT = GetComponent<Button>();          //è‡ªå‹•æŠ“å–å…ƒä»¶
+        JoinServerBT.onClick.AddListener(Create);        //è¨»å†Šè©²æŒ‰éˆ•æŒ‰ä¸‹çš„æ™‚å€™æœƒå‘¼å«Login()
     }
 
     void Create() {
         if (ag == null)
-            ag = FindObjectOfType<AGCC>();  //§ìºô¸ô¥D±±ª«¥ó
-        if (InputSID.text != null) {
-            ag.MatchScene(Convert.ToUInt32(InputSID.text,10));
+            ag = FindObjectOfType<AGCC>();  //æŠ“ç¶²è·¯ä¸»æ§ç‰©ä»¶
+        if (InputSID.text != "") {
+            ag.MatchScene(Convert.ToUInt32(InputSID.text, 10));
+        } else {
+            ag.JoinRandomScene();
         }
     }
 }

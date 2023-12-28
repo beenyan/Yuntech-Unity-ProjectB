@@ -2,20 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-public class CreateServer : MonoBehaviour
-{
+public class CreateServer: MonoBehaviour {
     private Button CreateServerBT;
-    private AGCC ag;                          //ºô¸ô¥D±±¨î
-    // Start is called before the first frame update
-    void Start()
-    {
-        CreateServerBT = GetComponent<Button>();          //¦Û°Ê§ì¨ú¤¸¥ó
-        CreateServerBT.onClick.AddListener(Create);        //µù¥U¸Ó«ö¶s«ö¤Uªº®É­Ô·|©I¥sLogin()
+    private AGCC ag;                          //ç¶²è·¯ä¸»æ§åˆ¶
+    void Start() {
+        CreateServerBT = GetComponent<Button>();          //è‡ªå‹•æŠ“å–å…ƒä»¶
+        CreateServerBT.onClick.AddListener(Create);        //è¨»å†Šè©²æŒ‰éˆ•æŒ‰ä¸‹çš„æ™‚å€™æœƒå‘¼å«Login()
     }
 
     void Create() {
         if (ag == null)
-            ag = FindObjectOfType<AGCC>();  //§ìºô¸ô¥D±±ª«¥ó
+            ag = FindObjectOfType<AGCC>();  //æŠ“ç¶²è·¯ä¸»æ§ç‰©ä»¶
         ag.EnterScene();
     }
 }

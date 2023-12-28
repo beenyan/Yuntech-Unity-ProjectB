@@ -6,61 +6,58 @@ using UnityEngine.SceneManagement;
 using TMPro;
 
 public class AGCC: MonoBehaviour {
-    //�C����gguid
     public TextMeshProUGUI text;
-    private const string gguid = "d45aa87b-08a0-497b-b48b-4330b059db13";
-    //�C��������
-    byte[] certificate = { 0x13, 0x19, 0x4A, 0xC0, 0xE7, 0x58, 0x4C, 0x91, 0x9E, 0x11, 0x92, 0x74, 0x6E, 0x52, 0x2B, 0x64, 0x75, 0x21, 0x9C, 0x36, 0x3C, 0x14, 0x4B, 0x21, 0x89, 0x6D, 0xBB, 0x4C, 0xF0, 0xFE, 0x53, 0x97, 0x56, 0xF9, 0xE3, 0x25, 0xAC, 0x5D, 0x48, 0x62, 0x84, 0xDA, 0x8E, 0xCC, 0xFB, 0xA3, 0x81, 0xE4, 0x58, 0xB8, 0xB5, 0x23, 0x87, 0xC7, 0x48, 0x7D, 0xB6, 0x9E, 0x7A, 0xA9, 0x1C, 0xA1, 0x29, 0x49, 0xDA, 0xC3, 0x42, 0x8B, 0xC2, 0x31, 0x47, 0x19, 0xB9, 0x14, 0xCB, 0x8A, 0x36, 0xD4, 0x05, 0x54, 0x51, 0x1E, 0x3F, 0xBF, 0x9E, 0x8B, 0x42, 0x59, 0x90, 0x4D, 0x80, 0x7D, 0x2B, 0xB1, 0x16, 0xC1, 0x8A, 0x10, 0x8E, 0x6C, 0xB5, 0x9D, 0x4B, 0x06, 0xB5, 0x9E, 0xBB, 0x4B, 0x9E, 0xBE, 0xC7, 0x60, 0x0D, 0xF2, 0x76, 0x65, 0xEC, 0xFB, 0x4A, 0x00, 0x8E, 0x74, 0xCE, 0x57, 0xAE, 0x65, 0xAE, 0xF1 };
-    public CloudGame ag = null;  //SGC�D������
-    public CloudScene chatSn;    //��Ѻ������� (��ѥD�j�U)
-    private string sguid = "e92557c3-dfdb-49d6-b921-64e63a466016";        //�ڪ���������(��ѫ�)
+    //遊戲的gguid
+    private const string gguid = "fca651ff-cd80-45dc-b18d-f7b9e2c4c107";
+    //遊戲的憑證
+    byte[] certificate = { 0xB6, 0x29, 0x1D, 0x18, 0x8E, 0xDF, 0x43, 0x22, 0xAD, 0x1E, 0x54, 0xAB, 0xD9, 0x0F, 0xD8, 0x8E, 0x6B, 0x93, 0x9F, 0x91, 0xA4, 0xFE, 0x47, 0xB8, 0xA5, 0x2B, 0x1E, 0x78, 0x8A, 0x20, 0x0C, 0x8F, 0xD2, 0x0E, 0x26, 0x8D, 0x6B, 0xB7, 0x47, 0xEB, 0xA2, 0xF8, 0x25, 0x30, 0x3F, 0x64, 0xCC, 0x7C, 0xE1, 0xD3, 0x19, 0x46, 0xC0, 0x6C, 0x4D, 0x63, 0x90, 0xE7, 0xFF, 0x50, 0x45, 0xAF, 0x88, 0x92, 0x8C, 0xAA, 0xB5, 0xC6, 0x77, 0x76, 0x49, 0x6C, 0xBC, 0xC2, 0x6D, 0x4F, 0x2E, 0x5D, 0x98, 0xC8, 0x42, 0x8B, 0x39, 0xDA, 0xD2, 0x87, 0x46, 0x63, 0xA5, 0x22, 0x45, 0xE5, 0x82, 0x9E, 0x18, 0x93, 0x31, 0xFC, 0x3D, 0x1E, 0x8F, 0x71, 0x44, 0x5A, 0x9B, 0xE2, 0xDE, 0xE2, 0xCF, 0x2D, 0x19, 0x1F, 0x44, 0xCD, 0xDD, 0x15, 0x6C, 0x67, 0x4A, 0xE8, 0xA4, 0x66, 0x5D, 0x38, 0x06, 0x35, 0xCE, 0x40 };
+    public CloudGame ag = null; //SGC主控物件
+    public CloudScene chatSn;
+    private string sguid = "025974a0-2642-4123-b4c8-5b2e7e5c281a";
     private void Awake() {
         DontDestroyOnLoad(this);
     }
     public void Start() {
-        CloudSystem.UnityEnvironment();                      // �Ұʬ�Unity�Ҧ�
-        CloudSystem.ServerProvider("sgc-api-us.spkita.com"); // �]�w���A��
-        SceneManager.LoadScene(1);                           //�}����������n�J����
+        CloudSystem.UnityEnvironment(); // 啟動為Unity模式
+        CloudSystem.ServerProvider("sgc-api-us.spkita.com"); // 設定伺服器
+        Utils.Scenes.Login.Load(); //開場直接跳到登入頁面
     }
     public Action loginCallBack;
-    //�n�J�ɽЩI�s����k�A���O�a�J�b���P�K�X�Ѽ�
+    //登入時請呼叫此方法，分別帶入帳號與密碼參數
     public void CloudLaunch(string username, string password, Action loginCallBack) {
-        this.loginCallBack = loginCallBack;                         //�]�w�n�J������CallBack
-        ag = new CloudGame(username, password, gguid, certificate); //�n�J�ɩһݪ��Ѽ� ���O��(�b��,�K�X,gguid, certificate)
-        ag.onCompletion += OnCompletion;                            //���w�B�z��k�A�ҥγs�u�O�_���\����
-        ag.onStateChanged += CloudStateChanged;                     //�s�u�i�װl��
-        ag.UnityLaunch();                                           //�s�u
+        this.loginCallBack = loginCallBack; //設定登入完成的CallBack
+        ag = new CloudGame(username, password, gguid, certificate); //登入時所需的參數 分別為(帳號,密碼,gguid, certificate)
+        ag.onCompletion += OnCompletion; //指定處理方法，啟用連線是否成功偵測
+        ag.onStateChanged += CloudStateChanged; //連線進度追蹤
+        ag.UnityLaunch(); //連線
     }
-    //���n�J������|���榹��k
+    //當登入完畢後會執行此方法
     void OnCompletion(int code, CloudGame game) {
+        //登入成功時會執行此段
         if (code == 0) {
-            //�n�J���\�ɷ|���榹�q
-            // Debug.Log("�n�J���\");
-            if (loginCallBack != null)//���a�JcallBack����
-            {
-                loginCallBack();    //�I�s
+            if (loginCallBack != null) {
+                loginCallBack();
             }
         } else {
-            //�n�J���Ѯɰ��檺�Ϭq
-            // Debug.LogWarning("�n�J���ѡA���~�N�X�G" + code);
+            Debug.LogWarning("Error: " + code);
         }
     }
-    //�l�ܳs�u�i��
+    //追蹤連線進度
     private void CloudStateChanged(int state, int code, CloudGame game) {
         if (state <= 600) {
-            Debug.Log("�s�u�i��:" + state);
+            Debug.Log("連線進度:" + state);
         } else if (state >= 900) {
-            Debug.Log("�_�}�s�u:" + state);
+            Debug.Log("斷開連線:" + state);
         }
     }
     /// <summary>
-    /// ���ogguid
+    /// 取得gguid
     /// </summary>
     public string GetGGUID() {
         return gguid;
     }
     /// <summary>
-    /// ���o����
+    /// 取得憑證
     /// </summary>
     public byte[] GetCertificate() {
         return certificate;
@@ -68,31 +65,37 @@ public class AGCC: MonoBehaviour {
 
     public void EnterScene() {
         chatSn = new CloudScene(ag, sguid);
-        chatSn.onCompletion += CB_EnterScene;   //���i��������\�Ncallback���ڪ��D�@�U
-        chatSn.onMessageIn += OnSceneMessageIn; //���������T��
+        chatSn.onCompletion += CB_EnterScene;
+        chatSn.onMessageIn += OnSceneMessageIn;
         chatSn.Launch();
     }
+
     public void MatchScene(uint sid) {
         chatSn = new CloudScene(ag, sguid, sid);
-        chatSn.onCompletion += CB_EnterScene;   //���i��������\�Ncallback���ڪ��D�@�U
-        chatSn.onMessageIn += OnSceneMessageIn; //���������T��
+        chatSn.onCompletion += CB_EnterScene;
+        chatSn.onMessageIn += OnSceneMessageIn;
         chatSn.Launch();
     }
-    //���i�J����������|���榹��k
+
+    public void JoinRandomScene() {
+        chatSn = new CloudScene(ag, sguid);
+        chatSn.onCompletion += CB_EnterScene;
+        chatSn.onMessageIn += OnSceneMessageIn;
+        chatSn.Match();
+    }
+
     void CB_EnterScene(int code, CloudScene scene) {
         if (code == 0) {
-            //�i�J���\�ɷ|���榹�q�A���K�������Sid�L�X��
             Debug.Log("Enter Scene Successed - Sid:" + chatSn.sid);
             text.text = chatSn.sid + "";
-            SceneManager.LoadScene(2);
+            Utils.Scenes.Play.Load();
         } else {
-            //�i�J���Ѯɰ��檺�Ϭq
             Debug.LogError("Enter Scene Failed:" + code);
         }
     }
-    //��ѫǦ���T��
+
     void OnSceneMessageIn(string msg, int delay, CloudScene scene) {
-        //�B�z�����T��
-        Debug.Log("��������T��:" + msg);
+
+        Debug.Log("I got message:" + msg);
     }
 }
