@@ -15,8 +15,10 @@ public class JoinServer: MonoBehaviour {
     }
 
     void Create() {
-        if (ag == null)
+        if (ag == null) {
             ag = FindObjectOfType<AGCC>();  //抓網路主控物件
+        }
+
         if (InputSID.text != "") {
             ag.MatchScene(Convert.ToUInt32(InputSID.text, 10));
         } else {

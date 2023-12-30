@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using Newtonsoft.Json;
+//using UnityEditor.PackageManager;
 
 public class AGCC: MonoBehaviour {
     public TextMeshProUGUI text;
@@ -14,23 +16,58 @@ public class AGCC: MonoBehaviour {
     public CloudGame ag = null; //SGC主控物件
     public CloudScene chatSn;
     private string sguid = "025974a0-2642-4123-b4c8-5b2e7e5c281a";
+    public static GameObject[,] PlayerMap = new GameObject[(int)GameController.MapSize.y, (int)GameController.MapSize.x];
+    public static GameObject[,] EnemyMap = new GameObject[(int)GameController.MapSize.y, (int)GameController.MapSize.x];
+    public static int PlayerRandomSeed = 0;
+    public static int EnemyRandomSeed = 0;
+    GameController EnemyGameController;
+    public uint EnemyUID = 0;
+    public Action loginCallBack;
+
+    //登入時請呼叫此方法，分別帶入帳號與密碼參數
     private void Awake() {
         DontDestroyOnLoad(this);
-    }
-    public void Start() {
         CloudSystem.UnityEnvironment(); // 啟動為Unity模式
         CloudSystem.ServerProvider("sgc-api-us.spkita.com"); // 設定伺服器
-        Utils.Scenes.Login.Load(); //開場直接跳到登入頁面
+        CloudSystem.ApplyNewUser(gguid, certificate, CB_GetSysAccount, null);
     }
-    public Action loginCallBack;
-    //登入時請呼叫此方法，分別帶入帳號與密碼參數
+
+    void CB_GetSysAccount(int code, object data, object token) {
+        if (code == 0) //Code為0表示取得帳號成功
+        {
+            Hashtable ht = data as Hashtable; //取得帳號成功時將返回一組Hashtable
+            string acc = ht["userid"].ToString(); //抓出帳號
+            string pw = ht["passwd"].ToString();  //抓出密碼
+            CloudLaunch(acc, pw, OnLoginSuccess);
+        }
+        //Code非0表示取得帳號失敗
+        else {
+            print("取得失敗，請確認gguid與憑證的正確");
+        }
+    }
+
+    public void OnLoginSuccess() {
+        ag.SetPlayerNickname("name", CB_SetNickName, null);
+    }
+
+    void CB_SetNickName(int code, object token) {
+        if (code == 0) {
+            Debug.Log("暱稱設定成功");
+            Utils.Scenes.Login.Load(); //開場直接跳到登入頁面
+        } else {
+            Debug.LogWarning("Regist Failed - Error:" + code);
+        }
+    }
+
     public void CloudLaunch(string username, string password, Action loginCallBack) {
         this.loginCallBack = loginCallBack; //設定登入完成的CallBack
         ag = new CloudGame(username, password, gguid, certificate); //登入時所需的參數 分別為(帳號,密碼,gguid, certificate)
         ag.onCompletion += OnCompletion; //指定處理方法，啟用連線是否成功偵測
         ag.onStateChanged += CloudStateChanged; //連線進度追蹤
+        ag.onPrivateMessageIn += OnPrivateMessageIn; //設定私訊接收方法
         ag.UnityLaunch(); //連線
     }
+
     //當登入完畢後會執行此方法
     void OnCompletion(int code, CloudGame game) {
         //登入成功時會執行此段
@@ -42,6 +79,13 @@ public class AGCC: MonoBehaviour {
             Debug.LogWarning("Error: " + code);
         }
     }
+
+    void OnApplicationQuit() {
+        //當程式關閉時使用者帳號並不會登出,我們可以此加入自動登出的機制
+        if (ag != null)
+            ag.Dispose();
+    }
+
     //追蹤連線進度
     private void CloudStateChanged(int state, int code, CloudGame game) {
         if (state <= 600) {
@@ -50,12 +94,14 @@ public class AGCC: MonoBehaviour {
             Debug.Log("斷開連線:" + state);
         }
     }
+
     /// <summary>
     /// 取得gguid
     /// </summary>
     public string GetGGUID() {
         return gguid;
     }
+
     /// <summary>
     /// 取得憑證
     /// </summary>
@@ -95,7 +141,38 @@ public class AGCC: MonoBehaviour {
     }
 
     void OnSceneMessageIn(string msg, int delay, CloudScene scene) {
+        GameInitData data = JsonConvert.DeserializeObject<GameInitData>(msg);
 
-        Debug.Log("I got message:" + msg);
+        if (data.uuid == ag.poid) {
+            return;
+        }
+
+        if (data.Request) {
+            var sendData = new GameInitData(PlayerMap, PlayerRandomSeed, ag.poid, false);
+            chatSn.Send(JsonConvert.SerializeObject(sendData));
+        }
+
+        Debug.Log(msg);
+
+        EnemyUID = data.uuid;
+        EnemyRandomSeed = data.RandomSeed;
+        EnemyMap = new GameObject[data.Map.GetLength(0), data.Map.GetLength(1)];
+        for (int y = 0; y < data.Map.GetLength(0); y++) {
+            for (int x = 0; x < data.Map.GetLength(1); x++) {
+                EnemyMap[y, x] = Instantiate(Resources.Load<GameObject>(Utils.Resources.Gem.ToString()));
+                EnemyMap[y, x].GetComponent<Gem>().Init(y, x, Utils.FindByTag(Utils.Tags.EnemyPlace).transform.GetChild(0).gameObject, (GemType)data.Map[y, x]);
+            }
+        }
+
+        EnemyGameController = Utils.FindByTag(Utils.Tags.EnemyPlace).transform.GetChild(0).GetComponent<GameController>();
+        EnemyGameController.Map = EnemyMap;
+        Utils.FindByTag(Utils.Tags.Waiting).SetActive(false);
+    }
+
+    void OnPrivateMessageIn(string msg, int delay, CloudGame game) {
+        Vector2[] data = JsonConvert.DeserializeObject<Vector2[]>(msg, new Vector2Converter());
+        Debug.Log($"Received: {data[0]}&{data[1]}");
+        EnemyGameController.GemClick(new Vector2((int)data[0].x, (int)data[0].y));
+        EnemyGameController.GemClick(new Vector2((int)data[1].x, (int)data[1].y));
     }
 }

@@ -31,15 +31,19 @@ public class Gem: MonoBehaviour {
         Sprites ??= Resources.LoadAll<Sprite>(Utils.Resources.GemMaterial.ToString());
     }
 
-    public void Init(int y, int x, GameObject parent) {
+    public void Init(int y, int x, GameObject parent, GemType? type = null) {
         Parent = parent;
         GameController = Parent.GetComponent<GameController>();
         Type = Utils.RandomEnumValue<GemType>();
         gameObject.transform.SetParent(Parent.transform);
         SetPosition(new(x, y));
 
-        while (!GameController.IsAvailable(GameController.SameTypeAround(this))) {
-            Type = Utils.RandomEnumValue<GemType>();
+        if (type != null) {
+            Type = (GemType)type;
+        } else {
+            while (!GameController.IsAvailable(GameController.SameTypeAround(this))) {
+                Type = Utils.RandomEnumValue<GemType>();
+            }
         }
 
         var renderer = gameObject.GetComponent<SpriteRenderer>();
