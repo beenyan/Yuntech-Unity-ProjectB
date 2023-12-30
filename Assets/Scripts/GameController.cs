@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
-
+using Newtonsoft.Json;
+using JetBrains.Annotations;
 public class Around {
     public int Left = 0;
     public int Right = 0;
@@ -18,26 +19,52 @@ public enum Status {
     Drag
 }
 
+public enum CmdType {
+    Init = 0,
+    Swap = 1,
+}
+
+class GameInitData {
+    public int[,] Map = new int[(int)GameController.MapSize.y, (int)GameController.MapSize.x];
+    public CmdType Cmd = CmdType.Init;
+    public int RandomSeed;
+    public uint enemyuid;
+    public uint uuid;
+    public bool Request = true;
+    public GameInitData() { }
+    public GameInitData(GameObject[,] Map, int randomSeed, uint uuid, bool request = true) {
+        this.Map = new int[Map.GetLength(0), Map.GetLength(1)];
+        for (int y = 0; y < Map.GetLength(0); y++) {
+            for (int x = 0; x < Map.GetLength(1); x++) {
+                this.Map[y, x] = (int)Map[y, x].GetComponent<Gem>().GetGemType();
+            }
+        }
+
+        RandomSeed = randomSeed;
+        Request = request;
+        this.uuid = uuid;
+    }
+}
+
 public class GameController: MonoBehaviour {
     public static Vector2 MapSize = new(10, 10);
-    private GameObject[,] Map = new GameObject[(int)MapSize.y, (int)MapSize.x];
+    public GameObject[,] Map = new GameObject[(int)MapSize.y, (int)MapSize.x];
     private readonly HashSet<Vector2> SelectedGem = new();
     public Status Status = Status.Idle;
     public int MoveCount = 0;
     private Gem[] RemovePrepare;
     private readonly HashSet<Vector2> FallDownPosSet = new();
     private PlayerController PlayerController;
+    private AGCC CloudController;
 
     private void Awake() {
         PlayerController = PlayerController != null ? PlayerController : Utils.FindByTag(Utils.Tags.Player).GetComponent<PlayerController>();
-        Init();
+        CloudController = CloudController != null ? CloudController : FindObjectOfType<AGCC>();
+        if (transform.parent.CompareTag(Utils.Tags.PlayerPlace.ToString())) {
+            Init();
+        }
     }
 
-    // Start is called before the first frame update
-    void Start() {
-    }
-
-    // Update is called once per frame
     void Update() {
         if (Status == Status.Remove && MoveCount == 0) {
             FallDownPosSet.Clear();
@@ -55,6 +82,11 @@ public class GameController: MonoBehaviour {
                 Map[y, x].GetComponent<Gem>().Init(y, x, gameObject);
             }
         }
+
+        AGCC.PlayerMap = Map;
+        AGCC.PlayerRandomSeed = UnityEngine.Random.Range(1, 59);
+        var data = new GameInitData(AGCC.PlayerMap, AGCC.PlayerRandomSeed, CloudController.ag.poid);
+        CloudController.chatSn.Send(JsonConvert.SerializeObject(data));
     }
 
     public Around SameTypeAround(Gem gem) {
@@ -95,12 +127,9 @@ public class GameController: MonoBehaviour {
     }
 
     public bool GemClick(Vector2 pos) {
-        if (transform.parent.CompareTag(Utils.Tags.EnemyPlace.ToString())) {
+        if (Status == Status.Remove || Status == Status.FallDown) {
             return false;
         }
-
-        if (Status == Status.Remove || Status == Status.FallDown)
-            return false;
 
         // Select
         if (SelectedGem.Contains(pos)) {
@@ -116,11 +145,19 @@ public class GameController: MonoBehaviour {
 
         // Select Second
         var firstPos = SelectedGem.Single();
+
         var diff = (firstPos - pos).Abs();
         if (diff.x >= 2 || diff.y >= 2) {
             // Too far
             return false;
         }
+
+        if (!transform.parent.CompareTag(Utils.Tags.EnemyPlace.ToString())) {
+            Vector2[] tempVec2 = new Vector2[] { firstPos, pos };
+            string json = JsonConvert.SerializeObject(tempVec2, new Vector2Converter());
+            CloudController.ag.PrivacySend(json, CloudController.EnemyUID);
+        }
+
 
         // Switch
         var firstGem = Map[(int)firstPos.y, (int)firstPos.x].GetComponent<Gem>();
@@ -136,6 +173,7 @@ public class GameController: MonoBehaviour {
         // Remove Same Type Gem
         RemovePrepare = new[] { firstGem, secondGem };
 
+        Debug.Log(RemovePrepare);
         return false;
     }
 
@@ -145,10 +183,10 @@ public class GameController: MonoBehaviour {
             var around = SameTypeAround(gem);
             int posY = (int)gem.GetPos().y;
             int posX = (int)gem.GetPos().x;
-            int destroyCount = 1;
+            int destroyCount = 0;
             if (around.Right + around.Left >= 2) {
                 for (int x = posX - around.Left; x < posX + around.Right + 1; ++x) {
-                    destroyCount += around.Right + around.Left;
+                    destroyCount += 1;
                     Destroy(Map[posY, x]);
                     Map[posY, x] = null;
                     isExcuteRemove = true;
@@ -157,27 +195,36 @@ public class GameController: MonoBehaviour {
 
             if (around.Top + around.Down >= 2) {
                 for (int y = posY - around.Top; y < posY + around.Down + 1; ++y) {
-                    destroyCount += around.Top + around.Down;
+                    destroyCount += 1;
                     Destroy(Map[y, posX]);
                     Map[y, posX] = null;
                     isExcuteRemove = true;
                 }
             }
 
+            bool isPlayer = transform.parent.CompareTag(Utils.Tags.PlayerPlace.ToString());
+
             // If Gem Be Remove
-            if (destroyCount != 1) {
+            if (destroyCount != 0) {
+                Debug.Log($"Remove {destroyCount} {gem.GetGemType()} Gem");
                 var gemType = gem.GetComponent<Gem>().GetGemType();
                 switch (gemType) {
                     case GemType.ATTACK_FIRE:
                     case GemType.ATTACK_WOOD:
                     case GemType.ATTACK_WATER:
-                        PlayerController.Attack(gemType, destroyCount);
+                        if (!isPlayer) {
+                            PlayerController.Attack(gemType, destroyCount);
+                        }
                         break;
                     case GemType.DEFENSE:
-                        PlayerController.Def(destroyCount);
+                        if (isPlayer) {
+                            PlayerController.Def(destroyCount);
+                        }
                         break;
                     case GemType.HEAL:
-                        PlayerController.Heal(destroyCount);
+                        if (isPlayer) {
+                            PlayerController.Heal(destroyCount);
+                        }
                         break;
                 }
             }
@@ -202,8 +249,7 @@ public class GameController: MonoBehaviour {
 
                 if (y == 0) {
                     // Top - Generate
-                    Map[y, x] = Instantiate(Resources.Load<GameObject>(Utils.Resources.Gem.ToString()));
-                    Map[y, x].GetComponent<Gem>().Init(y - 1, x, gameObject);
+                    Map[y, x] = SummonGem(y - 1, x);
                     Map[y, x].GetComponent<Gem>().MoveToPos(new Vector2(x, y));
                     isFall = true;
                     ++MoveCount;
@@ -226,5 +272,23 @@ public class GameController: MonoBehaviour {
             Status = Status.Remove;
             return;
         }
+    }
+
+    GameObject SummonGem(int y, int x) {
+        int gemType;
+        GameObject parent;
+        if (transform.parent.CompareTag(Utils.Tags.EnemyPlace.ToString())) {
+            gemType = (AGCC.EnemyRandomSeed / 10 + AGCC.EnemyRandomSeed % 10) % Enum.GetValues(typeof(GemType)).Length;
+            AGCC.EnemyRandomSeed = AGCC.EnemyRandomSeed % 10 * 10 + gemType;
+            parent = Utils.FindByTag(Utils.Tags.EnemyPlace);
+        } else {
+            gemType = (AGCC.PlayerRandomSeed / 10 + AGCC.PlayerRandomSeed % 10) % Enum.GetValues(typeof(GemType)).Length;
+            AGCC.PlayerRandomSeed = AGCC.PlayerRandomSeed % 10 * 10 + gemType;
+            parent = Utils.FindByTag(Utils.Tags.PlayerPlace);
+        }
+
+        var gem = Instantiate(Resources.Load<GameObject>(Utils.Resources.Gem.ToString()));
+        gem.GetComponent<Gem>().Init(y, x, parent.transform.GetChild(0).gameObject, (GemType)gemType);
+        return gem;
     }
 }
