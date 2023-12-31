@@ -82,8 +82,15 @@ public class AGCC: MonoBehaviour {
 
     void OnApplicationQuit() {
         //當程式關閉時使用者帳號並不會登出,我們可以此加入自動登出的機制
-        if (ag != null)
-            ag.Dispose();
+        uint stats = 0;
+        chatSn.Leave(OnPlayerLeave, stats);
+    }
+
+    private void OnPlayerLeave(int code, object token) {
+        if (code == 0) {
+            ag.SendOnClose("Leave", EnemyUID);
+        }
+        ag.Dispose();
     }
 
     //追蹤連線進度
@@ -170,9 +177,14 @@ public class AGCC: MonoBehaviour {
     }
 
     void OnPrivateMessageIn(string msg, int delay, CloudGame game) {
-        Vector2[] data = JsonConvert.DeserializeObject<Vector2[]>(msg, new Vector2Converter());
-        Debug.Log($"Received: {data[0]}&{data[1]}");
-        EnemyGameController.GemClick(new Vector2((int)data[0].x, (int)data[0].y));
-        EnemyGameController.GemClick(new Vector2((int)data[1].x, (int)data[1].y));
+        if (msg == "Leave") {
+            Debug.Log("對方已離開");
+            Utils.Scenes.Login.Load();
+        } else {
+            Vector2[] data = JsonConvert.DeserializeObject<Vector2[]>(msg, new Vector2Converter());
+            EnemyGameController.GemClick(new Vector2((int)data[0].x, (int)data[0].y));
+            EnemyGameController.GemClick(new Vector2((int)data[1].x, (int)data[1].y));
+        }
     }
+
 }
