@@ -91,6 +91,7 @@ public class GameController: MonoBehaviour {
         var data = new GameInitData(AGCC.PlayerMap, Scene, AGCC.PlayerRandomSeed, CloudController.ag.poid);
         CloudController.chatSn.Send(JsonConvert.SerializeObject(data));
         Utils.FindByTag(Utils.Tags.Background).GetComponent<UnityEngine.UI.Image>().sprite = Resources.Load<Sprite>($"Images/{Scene}");
+        Debug.Log(Scene.GetDescription());
         Utils.FindByTag(Utils.Tags.Background).GetComponent<AudioSource>().clip = Resources.Load<AudioClip>($"Sounds/{Scene.GetDescription()}");
         Utils.FindByTag(Utils.Tags.Background).GetComponent<AudioSource>().Play();
         int radsed = UnityEngine.Random.Range(1, 3);
@@ -163,7 +164,6 @@ public class GameController: MonoBehaviour {
         if (!transform.parent.CompareTag(Utils.Tags.EnemyPlace.ToString())) {
             Vector2[] tempVec2 = new Vector2[] { firstPos, pos };
             string json = JsonConvert.SerializeObject(tempVec2, new Vector2Converter());
-            Debug.Log(json);
             CloudController.ag.PrivacySend(json, CloudController.EnemyUID);
         }
 

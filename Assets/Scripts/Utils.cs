@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -46,17 +47,17 @@ public class Utils {
     }
 
     public enum Images {
-        [StringValue("MoonlitDancer")]
+        [Description("MoonlitDancer")]
         FieldD,
-        [StringValue("MoonlitDancer")]
+        [Description("MoonlitDancer")]
         FieldL,
-        [StringValue("CrimsonMoon")]
+        [Description("CrimsonMoon")]
         GraveD,
-        [StringValue("CrimsonMoon")]
+        [Description("CrimsonMoon")]
         GraveL,
-        [StringValue("PrayOrgan")]
+        [Description("PrayOrgan")]
         SanctuaryD,
-        [StringValue("PrayOrgan")]
+        [Description("PrayOrgan")]
         SanctuaryL,
     }
 
