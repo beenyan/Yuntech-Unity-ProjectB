@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -47,17 +46,17 @@ public class Utils {
     }
 
     public enum Images {
-        [StringValue("FieldD")]
+        [StringValue("MoonlitDancer")]
         FieldD,
-        [StringValue("FieldL")]
+        [StringValue("MoonlitDancer")]
         FieldL,
-        [StringValue("GraveD")]
+        [StringValue("CrimsonMoon")]
         GraveD,
-        [StringValue("GraveL")]
+        [StringValue("CrimsonMoon")]
         GraveL,
-        [StringValue("SanctuaryD")]
+        [StringValue("PrayOrgan")]
         SanctuaryD,
-        [StringValue("SanctuaryL")]
+        [StringValue("PrayOrgan")]
         SanctuaryL,
     }
 
@@ -89,6 +88,19 @@ public class Utils {
         string[] values = Enum.GetNames(typeof(T));
         return values[new System.Random().Next(values.Length)];
     }
+
+}
+
+public static class EnumExtraExtensions {
+    public static string GetDescription<T>(this T source) where T : Enum {
+        System.Reflection.FieldInfo fi = source.GetType().GetField(source.ToString());
+        System.ComponentModel.DescriptionAttribute[] attributes = (System.ComponentModel.DescriptionAttribute[])fi.GetCustomAttributes(
+            typeof(System.ComponentModel.DescriptionAttribute), false);
+        if (attributes.Length > 0)
+            return attributes[0].Description;
+        else
+            return source.ToString();
+    }
 }
 
 public static class ScenesExtensions {
@@ -104,6 +116,8 @@ public static class UnityVector2Extensions {
         return v2;
     }
 }
+
+
 
 public class Vector2Converter: JsonConverter {
     public override bool CanConvert(Type objectType) {
