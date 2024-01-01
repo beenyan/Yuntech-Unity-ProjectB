@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -45,6 +46,21 @@ public class Utils {
         GemMaterial,
     }
 
+    public enum Images {
+        [StringValue("FieldD")]
+        FieldD,
+        [StringValue("FieldL")]
+        FieldL,
+        [StringValue("GraveD")]
+        GraveD,
+        [StringValue("GraveL")]
+        GraveL,
+        [StringValue("SanctuaryD")]
+        SanctuaryD,
+        [StringValue("SanctuaryL")]
+        SanctuaryL,
+    }
+
     public enum Tags {
         [StringValue("GameController")]
         GameController,
@@ -56,6 +72,8 @@ public class Utils {
         EnemyPlace,
         [StringValue("Waiting")]
         Waiting,
+        [StringValue("Background")]
+        Background,
     }
 
     public static GameObject FindByTag(Tags tag) {
@@ -64,6 +82,11 @@ public class Utils {
 
     public static T RandomEnumValue<T>() where T : Enum {
         T[] values = (T[])Enum.GetValues(typeof(T));
+        return values[new System.Random().Next(values.Length)];
+    }
+
+    public static string RandomEnumString<T>() where T : Enum {
+        string[] values = Enum.GetNames(typeof(T));
         return values[new System.Random().Next(values.Length)];
     }
 }
