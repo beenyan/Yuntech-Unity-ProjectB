@@ -89,7 +89,7 @@ public class AGCC: MonoBehaviour {
         ag.Dispose();   //釋放連線資源
     }
 
-    private void OnPlayerLeave(int code, object token) {
+    public void OnPlayerLeave(int code, object token) {
         if (code == 0) {
             Debug.Log("Leave Success");
         } else {
@@ -176,7 +176,7 @@ public class AGCC: MonoBehaviour {
             }
         }
 
-        EnemyGameController = Utils.FindByTag(Utils.Tags.EnemyPlace).transform.GetChild(0).GetComponent<GameController>();
+        EnemyGameController = Utils.FindByTag(Utils.Tags.EnemyPlace).transform.GetChild(0).gameObject.GetComponent<GameController>();
         EnemyGameController.Map = EnemyMap;
         Utils.FindByTag(Utils.Tags.Waiting).SetActive(false);
     }
@@ -187,6 +187,9 @@ public class AGCC: MonoBehaviour {
             Utils.Scenes.Login.Load();
         } else {
             Vector2[] data = JsonConvert.DeserializeObject<Vector2[]>(msg, new Vector2Converter());
+            Debug.Log(data);
+            Debug.Log(data[0]);
+            Debug.Log(data[1]);
             EnemyGameController.GemClick(new Vector2((int)data[0].x, (int)data[0].y));
             EnemyGameController.GemClick(new Vector2((int)data[1].x, (int)data[1].y));
         }

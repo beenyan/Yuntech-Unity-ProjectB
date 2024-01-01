@@ -84,11 +84,6 @@ public class Utils {
         return values[new System.Random().Next(values.Length)];
     }
 
-    public static string RandomEnumString<T>() where T : Enum {
-        string[] values = Enum.GetNames(typeof(T));
-        return values[new System.Random().Next(values.Length)];
-    }
-
 }
 
 public static class EnumExtraExtensions {

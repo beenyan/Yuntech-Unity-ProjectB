@@ -4,6 +4,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using Newtonsoft.Json;
+
 public class Around {
     public int Left = 0;
     public int Right = 0;
@@ -20,13 +21,13 @@ public enum Status {
 
 class GameInitData {
     public int[,] Map = new int[(int)GameController.MapSize.y, (int)GameController.MapSize.x];
-    public string Scene = "GraveD";
+    public Utils.Images Scene = Utils.Images.GraveD;
     public int RandomSeed;
     public uint enemyuid;
     public uint uuid;
     public bool Request = true;
     public GameInitData() { }
-    public GameInitData(GameObject[,] Map, string scene, int randomSeed, uint uuid, bool request = true) {
+    public GameInitData(GameObject[,] Map, Utils.Images scene, int randomSeed, uint uuid, bool request = true) {
         this.Map = new int[Map.GetLength(0), Map.GetLength(1)];
         for (int y = 0; y < Map.GetLength(0); y++) {
             for (int x = 0; x < Map.GetLength(1); x++) {
@@ -81,14 +82,14 @@ public class GameController: MonoBehaviour {
         }
 
         AGCC.PlayerMap = Map;
-        AGCC.PlayerRandomSeed = UnityEngine.Random.Range(1, 59);
+        AGCC.PlayerRandomSeed = UnityEngine.Random.Range(6, 59);
         if (CloudController == null) {
             Utils.Scenes.AGCC.Load();
         }
-        string Scene = Utils.RandomEnumString<Utils.Images>();
-        Utils.FindByTag(Utils.Tags.Background).GetComponent<UnityEngine.UI.Image>().sprite = Resources.Load<Sprite>($"Images/{Scene}");
+        Utils.Images Scene = Utils.RandomEnumValue<Utils.Images>();
         var data = new GameInitData(AGCC.PlayerMap, Scene, AGCC.PlayerRandomSeed, CloudController.ag.poid);
         CloudController.chatSn.Send(JsonConvert.SerializeObject(data));
+        Utils.FindByTag(Utils.Tags.Background).GetComponent<UnityEngine.UI.Image>().sprite = Resources.Load<Sprite>($"Images/{Scene}");
     }
 
     public Around SameTypeAround(Gem gem) {
@@ -132,7 +133,6 @@ public class GameController: MonoBehaviour {
         if (Status == Status.Remove || Status == Status.FallDown) {
             return false;
         }
-
         // Select
         if (SelectedGem.Contains(pos)) {
             SelectedGem.Remove(pos);
@@ -154,12 +154,13 @@ public class GameController: MonoBehaviour {
             return false;
         }
 
+
         if (!transform.parent.CompareTag(Utils.Tags.EnemyPlace.ToString())) {
             Vector2[] tempVec2 = new Vector2[] { firstPos, pos };
             string json = JsonConvert.SerializeObject(tempVec2, new Vector2Converter());
+            Debug.Log(json);
             CloudController.ag.PrivacySend(json, CloudController.EnemyUID);
         }
-
 
         // Switch
         var firstGem = Map[(int)firstPos.y, (int)firstPos.x].GetComponent<Gem>();
@@ -168,6 +169,7 @@ public class GameController: MonoBehaviour {
         AudioS.Play();
         firstGem.MoveToPos(pos);
         secondGem.MoveToPos(firstPos);
+
         (Map[(int)firstPos.y, (int)firstPos.x], Map[(int)pos.y, (int)pos.x]) = (Map[(int)pos.y, (int)pos.x], Map[(int)firstPos.y, (int)firstPos.x]);
         SelectedGem.Clear();
         Status = Status.Remove;
