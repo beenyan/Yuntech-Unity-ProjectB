@@ -169,6 +169,8 @@ public class AGCC: MonoBehaviour {
         EnemyRandomSeed = data.RandomSeed;
         EnemyMap = new GameObject[data.Map.GetLength(0), data.Map.GetLength(1)];
         Utils.FindByTag(Utils.Tags.Background).GetComponent<Image>().sprite = Resources.Load<Sprite>($"Images/{data.Scene}");
+        Utils.FindByTag(Utils.Tags.Background).GetComponent<AudioSource>().clip = Resources.Load<AudioClip>($"Sounds/{data.Scene.GetDescription()}");
+        Utils.FindByTag(Utils.Tags.Background).GetComponent<AudioSource>().Play();
         for (int y = 0; y < data.Map.GetLength(0); y++) {
             for (int x = 0; x < data.Map.GetLength(1); x++) {
                 EnemyMap[y, x] = Instantiate(Resources.Load<GameObject>(Utils.Resources.Gem.ToString()));
@@ -187,9 +189,6 @@ public class AGCC: MonoBehaviour {
             Utils.Scenes.Login.Load();
         } else {
             Vector2[] data = JsonConvert.DeserializeObject<Vector2[]>(msg, new Vector2Converter());
-            Debug.Log(data);
-            Debug.Log(data[0]);
-            Debug.Log(data[1]);
             EnemyGameController.GemClick(new Vector2((int)data[0].x, (int)data[0].y));
             EnemyGameController.GemClick(new Vector2((int)data[1].x, (int)data[1].y));
         }

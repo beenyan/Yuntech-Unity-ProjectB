@@ -91,31 +91,10 @@ public class GameController: MonoBehaviour {
         var data = new GameInitData(AGCC.PlayerMap, Scene, AGCC.PlayerRandomSeed, CloudController.ag.poid);
         CloudController.chatSn.Send(JsonConvert.SerializeObject(data));
         Utils.FindByTag(Utils.Tags.Background).GetComponent<UnityEngine.UI.Image>().sprite = Resources.Load<Sprite>($"Images/{Scene}");
-        AudioClip tesAC = null;
-        switch (Scene.GetDescription()) {
-            case "GraveL":
-                tesAC= Resources.Load<AudioClip>($"Sounds/CrimsonMoon");
-                break;
-            case "GraveD":
-                tesAC = Resources.Load<AudioClip>($"Sounds/CrimsonMoon");
-                break;
-            case "SanctuaryL":
-                tesAC = Resources.Load<AudioClip>($"Sounds/PrayOrgan");
-                break;
-            case "SanctuaryD":
-                tesAC = Resources.Load<AudioClip>($"Sounds/PrayOrgan");
-                break;
-            case "FieldL":
-                tesAC = Resources.Load<AudioClip>($"Sounds/MoonlitDancer");
-                break;
-            case "FieldD":
-                tesAC = Resources.Load<AudioClip>($"Sounds/MoonlitDancer");
-                break;
-        }
-        Utils.FindByTag(Utils.Tags.Background).GetComponent<UnityEngine.AudioSource>().clip=tesAC;
-        Utils.FindByTag(Utils.Tags.Background).GetComponent<UnityEngine.AudioSource>().Play();
-        int radsed = (int)UnityEngine.Random.Range(1, 3);
-        Utils.FindByTag(Utils.Tags.Character).GetComponent<UnityEngine.SpriteRenderer>().sprite= Resources.Load<Sprite>("Chara/Cha"+radsed);
+        Utils.FindByTag(Utils.Tags.Background).GetComponent<AudioSource>().clip = Resources.Load<AudioClip>($"Sounds/{Scene.GetDescription()}");
+        Utils.FindByTag(Utils.Tags.Background).GetComponent<AudioSource>().Play();
+        int radsed = UnityEngine.Random.Range(1, 3);
+        Utils.FindByTag(Utils.Tags.Character).GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("Chara/Cha" + radsed);
     }
 
     public Around SameTypeAround(Gem gem) {
