@@ -53,6 +53,7 @@ public class GameController: MonoBehaviour {
     private PlayerController PlayerController;
     private AGCC CloudController;
     private AudioSource AudioS;
+    public GameObject chara;
 
     private void Awake() {
         PlayerController = PlayerController != null ? PlayerController : Utils.FindByTag(Utils.Tags.Player).GetComponent<PlayerController>();
@@ -90,6 +91,31 @@ public class GameController: MonoBehaviour {
         var data = new GameInitData(AGCC.PlayerMap, Scene, AGCC.PlayerRandomSeed, CloudController.ag.poid);
         CloudController.chatSn.Send(JsonConvert.SerializeObject(data));
         Utils.FindByTag(Utils.Tags.Background).GetComponent<UnityEngine.UI.Image>().sprite = Resources.Load<Sprite>($"Images/{Scene}");
+        AudioClip tesAC = null;
+        switch (Scene.GetDescription()) {
+            case "GraveL":
+                tesAC= Resources.Load<AudioClip>($"Sounds/CrimsonMoon");
+                break;
+            case "GraveD":
+                tesAC = Resources.Load<AudioClip>($"Sounds/CrimsonMoon");
+                break;
+            case "SanctuaryL":
+                tesAC = Resources.Load<AudioClip>($"Sounds/PrayOrgan");
+                break;
+            case "SanctuaryD":
+                tesAC = Resources.Load<AudioClip>($"Sounds/PrayOrgan");
+                break;
+            case "FieldL":
+                tesAC = Resources.Load<AudioClip>($"Sounds/MoonlitDancer");
+                break;
+            case "FieldD":
+                tesAC = Resources.Load<AudioClip>($"Sounds/MoonlitDancer");
+                break;
+        }
+        Utils.FindByTag(Utils.Tags.Background).GetComponent<UnityEngine.AudioSource>().clip=tesAC;
+        Utils.FindByTag(Utils.Tags.Background).GetComponent<UnityEngine.AudioSource>().Play();
+        int radsed = (int)UnityEngine.Random.Range(1, 3);
+        Utils.FindByTag(Utils.Tags.Character).GetComponent<UnityEngine.SpriteRenderer>().sprite= Resources.Load<Sprite>("Chara/Cha"+radsed);
     }
 
     public Around SameTypeAround(Gem gem) {

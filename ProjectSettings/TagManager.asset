@@ -9,6 +9,7 @@ TagManager:
   - EnemyPlace
   - Waiting
   - Background
+  - Character
   layers:
   - Default
   - TransparentFX

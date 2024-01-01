@@ -73,6 +73,8 @@ public class Utils {
         Waiting,
         [StringValue("Background")]
         Background,
+        [StringValue("Character")]
+        Character,
     }
 
     public static GameObject FindByTag(Tags tag) {
