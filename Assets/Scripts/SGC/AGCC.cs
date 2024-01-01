@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 using Newtonsoft.Json;
+using UnityEngine.UI;
 //using UnityEditor.PackageManager;
 
 public class AGCC: MonoBehaviour {
@@ -82,15 +83,18 @@ public class AGCC: MonoBehaviour {
 
     void OnApplicationQuit() {
         //當程式關閉時使用者帳號並不會登出,我們可以此加入自動登出的機制
-        uint stats = 0;
-        chatSn.Leave(OnPlayerLeave, stats);
+        object token = null;
+        chatSn.Leave(OnPlayerLeave, token);
+        ag.PrivacySend("Leave", EnemyUID); //傳送私訊給對方說我要離開了
+        ag.Dispose();   //釋放連線資源
     }
 
     private void OnPlayerLeave(int code, object token) {
         if (code == 0) {
-            ag.SendOnClose("Leave", EnemyUID);
+            Debug.Log("Leave Success");
+        } else {
+            Debug.LogWarning("Leave Failed - Error:" + code);
         }
-        ag.Dispose();
     }
 
     //追蹤連線進度
@@ -155,15 +159,16 @@ public class AGCC: MonoBehaviour {
         }
 
         if (data.Request) {
-            var sendData = new GameInitData(PlayerMap, PlayerRandomSeed, ag.poid, false);
+            var sendData = new GameInitData(PlayerMap, data.Scene, PlayerRandomSeed, ag.poid, false);
             chatSn.Send(JsonConvert.SerializeObject(sendData));
         }
 
-        Debug.Log(msg);
+        // Debug.Log(msg);
 
         EnemyUID = data.uuid;
         EnemyRandomSeed = data.RandomSeed;
         EnemyMap = new GameObject[data.Map.GetLength(0), data.Map.GetLength(1)];
+        Utils.FindByTag(Utils.Tags.Background).GetComponent<Image>().sprite = Resources.Load<Sprite>($"Images/{data.Scene}");
         for (int y = 0; y < data.Map.GetLength(0); y++) {
             for (int x = 0; x < data.Map.GetLength(1); x++) {
                 EnemyMap[y, x] = Instantiate(Resources.Load<GameObject>(Utils.Resources.Gem.ToString()));
@@ -178,7 +183,7 @@ public class AGCC: MonoBehaviour {
 
     void OnPrivateMessageIn(string msg, int delay, CloudGame game) {
         if (msg == "Leave") {
-            Debug.Log("對方已離開");
+            text.text = "對方輸了";
             Utils.Scenes.Login.Load();
         } else {
             Vector2[] data = JsonConvert.DeserializeObject<Vector2[]>(msg, new Vector2Converter());

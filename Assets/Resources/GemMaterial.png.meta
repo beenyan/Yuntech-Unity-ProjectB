@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: f2f309f228441114aa9ff47ed443a792
+guid: f4c7628c8ee20564da6f62d88a02288a
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 250
+  spritePixelsToUnits: 140
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -110,76 +110,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Gem_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 256
-        width: 256
-        height: 256
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 581aa739e0a9c1e42a6ce8e1b4759209
-      internalID: 2093594470
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Gem_1
-      rect:
-        serializedVersion: 2
-        x: 256
-        y: 256
-        width: 256
-        height: 256
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 0f840947326857d468a0d5b54c398ea3
-      internalID: 906954105
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Gem_2
-      rect:
-        serializedVersion: 2
-        x: 512
-        y: 256
-        width: 256
-        height: 256
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 415a5bca34a3f0949a5f38fa5de9f22e
-      internalID: -1172259873
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Gem_3
+      name: cube_final_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 256
-        height: 256
+        width: 152
+        height: 152
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -187,20 +124,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c9717273104d9834aa4d51550bbfd1d6
-      internalID: -1172478217
+      spriteID: 625f78627f34a4d419dbe88c61cbd388
+      internalID: 1073087826
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Gem_4
+      name: cube_final_1
       rect:
         serializedVersion: 2
-        x: 256
+        x: 152
         y: 0
-        width: 256
-        height: 256
+        width: 152
+        height: 152
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -208,20 +145,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 77f8915c560547a4cb042e5a22a7387e
-      internalID: -1770152576
+      spriteID: f4d34058714d2c747b11b3c6874fa917
+      internalID: 632084591
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Gem_5
+      name: cube_final_2
       rect:
         serializedVersion: 2
-        x: 512
+        x: 304
         y: 0
-        width: 256
-        height: 256
+        width: 152
+        height: 152
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -229,8 +166,50 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: b2dbb9c280c009e48a29874b7e314227
-      internalID: 297295952
+      spriteID: 1d1efb57d976da548a32239031db3499
+      internalID: -999775205
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cube_final_3
+      rect:
+        serializedVersion: 2
+        x: 456
+        y: 0
+        width: 152
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9b62fa9c3c67c27428b18eb2303861a5
+      internalID: 408138111
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cube_final_4
+      rect:
+        serializedVersion: 2
+        x: 608
+        y: 0
+        width: 152
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1e05fe6908ac385419f4d8a73a9382a1
+      internalID: -220898789
       vertices: []
       indices: 
       edges: []
@@ -239,19 +218,18 @@ TextureImporter:
     physicsShape: []
     bones: []
     spriteID: 5e97eb03825dee720800000000000000
-    internalID: 1537655665
+    internalID: 0
     vertices: []
     indices: 
     edges: []
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      Gem_0: 2093594470
-      Gem_1: 906954105
-      Gem_2: -1172259873
-      Gem_3: -1172478217
-      Gem_4: -1770152576
-      Gem_5: 297295952
+      cube_final_0: 1073087826
+      cube_final_1: 632084591
+      cube_final_2: -999775205
+      cube_final_3: 408138111
+      cube_final_4: -220898789
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

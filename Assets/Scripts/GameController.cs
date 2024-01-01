@@ -4,7 +4,6 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using Newtonsoft.Json;
-using JetBrains.Annotations;
 public class Around {
     public int Left = 0;
     public int Right = 0;
@@ -19,20 +18,15 @@ public enum Status {
     Drag
 }
 
-public enum CmdType {
-    Init = 0,
-    Swap = 1,
-}
-
 class GameInitData {
     public int[,] Map = new int[(int)GameController.MapSize.y, (int)GameController.MapSize.x];
-    public CmdType Cmd = CmdType.Init;
+    public string Scene = "GraveD";
     public int RandomSeed;
     public uint enemyuid;
     public uint uuid;
     public bool Request = true;
     public GameInitData() { }
-    public GameInitData(GameObject[,] Map, int randomSeed, uint uuid, bool request = true) {
+    public GameInitData(GameObject[,] Map, string scene, int randomSeed, uint uuid, bool request = true) {
         this.Map = new int[Map.GetLength(0), Map.GetLength(1)];
         for (int y = 0; y < Map.GetLength(0); y++) {
             for (int x = 0; x < Map.GetLength(1); x++) {
@@ -40,6 +34,7 @@ class GameInitData {
             }
         }
 
+        Scene = scene;
         RandomSeed = randomSeed;
         Request = request;
         this.uuid = uuid;
@@ -56,10 +51,12 @@ public class GameController: MonoBehaviour {
     private readonly HashSet<Vector2> FallDownPosSet = new();
     private PlayerController PlayerController;
     private AGCC CloudController;
+    private AudioSource AudioS;
 
     private void Awake() {
         PlayerController = PlayerController != null ? PlayerController : Utils.FindByTag(Utils.Tags.Player).GetComponent<PlayerController>();
         CloudController = CloudController != null ? CloudController : FindObjectOfType<AGCC>();
+        AudioS = gameObject.GetComponent<AudioSource>();
         if (transform.parent.CompareTag(Utils.Tags.PlayerPlace.ToString())) {
             Init();
         }
@@ -85,7 +82,12 @@ public class GameController: MonoBehaviour {
 
         AGCC.PlayerMap = Map;
         AGCC.PlayerRandomSeed = UnityEngine.Random.Range(1, 59);
-        var data = new GameInitData(AGCC.PlayerMap, AGCC.PlayerRandomSeed, CloudController.ag.poid);
+        if (CloudController == null) {
+            Utils.Scenes.AGCC.Load();
+        }
+        string Scene = Utils.RandomEnumString<Utils.Images>();
+        Utils.FindByTag(Utils.Tags.Background).GetComponent<UnityEngine.UI.Image>().sprite = Resources.Load<Sprite>($"Images/{Scene}");
+        var data = new GameInitData(AGCC.PlayerMap, Scene, AGCC.PlayerRandomSeed, CloudController.ag.poid);
         CloudController.chatSn.Send(JsonConvert.SerializeObject(data));
     }
 
@@ -163,6 +165,7 @@ public class GameController: MonoBehaviour {
         var firstGem = Map[(int)firstPos.y, (int)firstPos.x].GetComponent<Gem>();
         var secondGem = Map[(int)pos.y, (int)pos.x].GetComponent<Gem>();
         firstGem.SetSelect(false);
+        AudioS.Play();
         firstGem.MoveToPos(pos);
         secondGem.MoveToPos(firstPos);
         (Map[(int)firstPos.y, (int)firstPos.x], Map[(int)pos.y, (int)pos.x]) = (Map[(int)pos.y, (int)pos.x], Map[(int)firstPos.y, (int)firstPos.x]);
@@ -172,14 +175,13 @@ public class GameController: MonoBehaviour {
 
         // Remove Same Type Gem
         RemovePrepare = new[] { firstGem, secondGem };
-
-        Debug.Log(RemovePrepare);
         return false;
     }
 
     void RemoveSameType(Gem[] gemArray) {
         bool isExcuteRemove = false;
         foreach (var gem in gemArray.Distinct().NotNull()) {
+            AudioS.Play();
             var around = SameTypeAround(gem);
             int posY = (int)gem.GetPos().y;
             int posX = (int)gem.GetPos().x;
@@ -206,7 +208,6 @@ public class GameController: MonoBehaviour {
 
             // If Gem Be Remove
             if (destroyCount != 0) {
-                Debug.Log($"Remove {destroyCount} {gem.GetGemType()} Gem");
                 var gemType = gem.GetComponent<Gem>().GetGemType();
                 switch (gemType) {
                     case GemType.ATTACK_FIRE:
