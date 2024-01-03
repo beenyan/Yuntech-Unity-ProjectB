@@ -5,6 +5,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class StringValueAttribute: Attribute {
     public string Value { get; }
@@ -87,6 +88,15 @@ public class Utils {
         return values[new System.Random().Next(values.Length)];
     }
 
+}
+public static class ImageExtraExtensions {
+    public static T ChangeAlpha<T>(this T g, float newAlpha)
+        where T : Graphic {
+        var color = g.color;
+        color.a = newAlpha;
+        g.color = color;
+        return g;
+    }
 }
 
 public static class EnumExtraExtensions {

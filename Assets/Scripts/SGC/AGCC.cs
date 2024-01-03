@@ -43,6 +43,7 @@ public class AGCC: MonoBehaviour {
         }
         //Code非0表示取得帳號失敗
         else {
+            print(code);
             print("取得失敗，請確認gguid與憑證的正確");
         }
     }
@@ -154,33 +155,33 @@ public class AGCC: MonoBehaviour {
     void OnSceneMessageIn(string msg, int delay, CloudScene scene) {
         GameInitData data = JsonConvert.DeserializeObject<GameInitData>(msg);
 
-        if (data.uuid == ag.poid) {
-            return;
-        }
-
-        if (data.Request) {
-            var sendData = new GameInitData(PlayerMap, data.Scene, PlayerRandomSeed, ag.poid, false);
-            chatSn.Send(JsonConvert.SerializeObject(sendData));
-        }
-
-        // Debug.Log(msg);
-
-        EnemyUID = data.uuid;
-        EnemyRandomSeed = data.RandomSeed;
-        EnemyMap = new GameObject[data.Map.GetLength(0), data.Map.GetLength(1)];
-        Utils.FindByTag(Utils.Tags.Background).GetComponent<Image>().sprite = Resources.Load<Sprite>($"Images/{data.Scene}");
-        Utils.FindByTag(Utils.Tags.Background).GetComponent<AudioSource>().clip = Resources.Load<AudioClip>($"Sounds/{data.Scene.GetDescription()}");
-        Utils.FindByTag(Utils.Tags.Background).GetComponent<AudioSource>().Play();
-        for (int y = 0; y < data.Map.GetLength(0); y++) {
-            for (int x = 0; x < data.Map.GetLength(1); x++) {
-                EnemyMap[y, x] = Instantiate(Resources.Load<GameObject>(Utils.Resources.Gem.ToString()));
-                EnemyMap[y, x].GetComponent<Gem>().Init(y, x, Utils.FindByTag(Utils.Tags.EnemyPlace).transform.GetChild(0).gameObject, (GemType)data.Map[y, x]);
+        if (data.uuid != ag.poid) {
+            Debug.Log($"Enemy?:{data.uuid} & {ag.poid}");
+            if (data.Request) {
+                Debug.Log($"Request:{data.uuid} & {ag.poid}");
+                var sendData = new GameInitData(PlayerMap, data.Scene, PlayerRandomSeed, ag.poid, false);
+                chatSn.Send(JsonConvert.SerializeObject(sendData));
             }
-        }
 
-        EnemyGameController = Utils.FindByTag(Utils.Tags.EnemyPlace).transform.GetChild(0).gameObject.GetComponent<GameController>();
-        EnemyGameController.Map = EnemyMap;
-        Utils.FindByTag(Utils.Tags.Waiting).SetActive(false);
+            // Debug.Log(msg);
+
+            EnemyUID = data.uuid;
+            EnemyRandomSeed = data.RandomSeed;
+            EnemyMap = new GameObject[data.Map.GetLength(0), data.Map.GetLength(1)];
+            Utils.FindByTag(Utils.Tags.Background).GetComponent<Image>().sprite = Resources.Load<Sprite>($"Images/{data.Scene}");
+            Utils.FindByTag(Utils.Tags.Background).GetComponent<AudioSource>().clip = Resources.Load<AudioClip>($"Sounds/{data.Scene.GetDescription()}");
+            Utils.FindByTag(Utils.Tags.Background).GetComponent<AudioSource>().Play();
+            for (int y = 0; y < data.Map.GetLength(0); y++) {
+                for (int x = 0; x < data.Map.GetLength(1); x++) {
+                    EnemyMap[y, x] = Instantiate(Resources.Load<GameObject>(Utils.Resources.Gem.ToString()));
+                    EnemyMap[y, x].GetComponent<Gem>().Init(y, x, Utils.FindByTag(Utils.Tags.EnemyPlace).transform.GetChild(0).gameObject, (GemType)data.Map[y, x]);
+                }
+            }
+
+            EnemyGameController = Utils.FindByTag(Utils.Tags.EnemyPlace).transform.GetChild(0).gameObject.GetComponent<GameController>();
+            EnemyGameController.Map = EnemyMap;
+            Utils.FindByTag(Utils.Tags.Waiting).SetActive(false);
+        }
     }
 
     void OnPrivateMessageIn(string msg, int delay, CloudGame game) {
