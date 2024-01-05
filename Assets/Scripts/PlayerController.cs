@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayerController: MonoBehaviour {
-    public float Health = 100;
-    public float Defense = 100;
+    private float Health = 100;
+    private float Defense = 50;
     private readonly float MaxHealth = 100;
     private readonly float MaxDefense = 100;
     public TMP_Text FontText;
@@ -47,7 +47,6 @@ public class PlayerController: MonoBehaviour {
 
     public void Heal(int count) {
         Health = Mathf.Min(MaxHealth, Health + count);
-
     }
 
     internal static object GetMap() {

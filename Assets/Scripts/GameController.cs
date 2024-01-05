@@ -54,8 +54,10 @@ public class GameController: MonoBehaviour {
     private AGCC CloudController;
     private AudioSource AudioS;
     public GameObject chara;
+    bool isPlayer;
 
     private void Awake() {
+        isPlayer = transform.parent.CompareTag(Utils.Tags.PlayerPlace.ToString());
         PlayerController = PlayerController != null ? PlayerController : Utils.FindByTag(Utils.Tags.Player).GetComponent<PlayerController>();
         CloudController = CloudController != null ? CloudController : FindObjectOfType<AGCC>();
         AudioS = gameObject.GetComponent<AudioSource>();
@@ -157,7 +159,6 @@ public class GameController: MonoBehaviour {
             return false;
         }
 
-
         if (!transform.parent.CompareTag(Utils.Tags.EnemyPlace.ToString())) {
             Vector2[] tempVec2 = new Vector2[] { firstPos, pos };
             string json = JsonConvert.SerializeObject(tempVec2, new Vector2Converter());
@@ -208,8 +209,6 @@ public class GameController: MonoBehaviour {
                 }
             }
 
-            bool isPlayer = transform.parent.CompareTag(Utils.Tags.PlayerPlace.ToString());
-
             // If Gem Be Remove
             if (destroyCount != 0) {
                 var gemType = gem.GetComponent<Gem>().GetGemType();
@@ -219,6 +218,7 @@ public class GameController: MonoBehaviour {
                     case GemType.ATTACK_WATER:
                         if (!isPlayer) {
                             PlayerController.Attack(gemType, destroyCount);
+                            CameraShakeManger.Instance.ShakeCamera(5f, 0.1f * destroyCount / 2);
                         }
                         break;
                     case GemType.DEFENSE:

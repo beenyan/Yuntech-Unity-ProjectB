@@ -154,13 +154,13 @@ public class AGCC: MonoBehaviour {
 
     void OnSceneMessageIn(string msg, int delay, CloudScene scene) {
         GameInitData data = JsonConvert.DeserializeObject<GameInitData>(msg);
-
         if (data.uuid != ag.poid) {
-            Debug.Log($"Enemy?:{data.uuid} & {ag.poid}");
             if (data.Request) {
-                Debug.Log($"Request:{data.uuid} & {ag.poid}");
                 var sendData = new GameInitData(PlayerMap, data.Scene, PlayerRandomSeed, ag.poid, false);
                 chatSn.Send(JsonConvert.SerializeObject(sendData));
+                Utils.FindByTag(Utils.Tags.Background).GetComponent<Image>().sprite = Resources.Load<Sprite>($"Images/{data.Scene}");
+                Utils.FindByTag(Utils.Tags.Background).GetComponent<AudioSource>().clip = Resources.Load<AudioClip>($"Sounds/{data.Scene.GetDescription()}");
+                Utils.FindByTag(Utils.Tags.Background).GetComponent<AudioSource>().Play();
             }
 
             // Debug.Log(msg);
@@ -168,9 +168,6 @@ public class AGCC: MonoBehaviour {
             EnemyUID = data.uuid;
             EnemyRandomSeed = data.RandomSeed;
             EnemyMap = new GameObject[data.Map.GetLength(0), data.Map.GetLength(1)];
-            Utils.FindByTag(Utils.Tags.Background).GetComponent<Image>().sprite = Resources.Load<Sprite>($"Images/{data.Scene}");
-            Utils.FindByTag(Utils.Tags.Background).GetComponent<AudioSource>().clip = Resources.Load<AudioClip>($"Sounds/{data.Scene.GetDescription()}");
-            Utils.FindByTag(Utils.Tags.Background).GetComponent<AudioSource>().Play();
             for (int y = 0; y < data.Map.GetLength(0); y++) {
                 for (int x = 0; x < data.Map.GetLength(1); x++) {
                     EnemyMap[y, x] = Instantiate(Resources.Load<GameObject>(Utils.Resources.Gem.ToString()));
