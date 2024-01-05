@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Newtonsoft.Json;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class StringValueAttribute: Attribute {
     public string Value { get; }
@@ -47,17 +48,17 @@ public class Utils {
     }
 
     public enum Images {
-        [StringValue("FieldD")]
+        [Description("MoonlitDancer")]
         FieldD,
-        [StringValue("FieldL")]
+        [Description("MoonlitDancer")]
         FieldL,
-        [StringValue("GraveD")]
+        [Description("CrimsonMoon")]
         GraveD,
-        [StringValue("GraveL")]
+        [Description("CrimsonMoon")]
         GraveL,
-        [StringValue("SanctuaryD")]
+        [Description("PrayOrgan")]
         SanctuaryD,
-        [StringValue("SanctuaryL")]
+        [Description("PrayOrgan")]
         SanctuaryL,
     }
 
@@ -74,6 +75,8 @@ public class Utils {
         Waiting,
         [StringValue("Background")]
         Background,
+        [StringValue("Character")]
+        Character,
     }
 
     public static GameObject FindByTag(Tags tag) {
@@ -85,9 +88,26 @@ public class Utils {
         return values[new System.Random().Next(values.Length)];
     }
 
-    public static string RandomEnumString<T>() where T : Enum {
-        string[] values = Enum.GetNames(typeof(T));
-        return values[new System.Random().Next(values.Length)];
+}
+public static class ImageExtraExtensions {
+    public static T ChangeAlpha<T>(this T g, float newAlpha)
+        where T : Graphic {
+        var color = g.color;
+        color.a = newAlpha;
+        g.color = color;
+        return g;
+    }
+}
+
+public static class EnumExtraExtensions {
+    public static string GetDescription<T>(this T source) where T : Enum {
+        System.Reflection.FieldInfo fi = source.GetType().GetField(source.ToString());
+        System.ComponentModel.DescriptionAttribute[] attributes = (System.ComponentModel.DescriptionAttribute[])fi.GetCustomAttributes(
+            typeof(System.ComponentModel.DescriptionAttribute), false);
+        if (attributes.Length > 0)
+            return attributes[0].Description;
+        else
+            return source.ToString();
     }
 }
 
@@ -104,6 +124,8 @@ public static class UnityVector2Extensions {
         return v2;
     }
 }
+
+
 
 public class Vector2Converter: JsonConverter {
     public override bool CanConvert(Type objectType) {
